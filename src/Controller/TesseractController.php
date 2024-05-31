@@ -38,7 +38,7 @@ class TesseractController extends AbstractController
                             <li><code>/api/tesseract</code>: Endpoint for processing PDF files with Tesseract</li>
                             <!-- Ajoutez d'autres endpoints ici -->
                         </ul>
-                        <a href="https://www.olona-talents.com" class="btn btn-primary">Aller au site Olona Talents</a>
+                        <a href="https://www.olona-talents.com" class="btn btn-primary">Return to Olona Talents</a>
                     </div>
                 </div>
             </div>
