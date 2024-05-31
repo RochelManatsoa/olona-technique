@@ -12,8 +12,48 @@ use Symfony\Component\HttpFoundation\Request;
 class TesseractController extends AbstractController
 {
     
+    #[Route('/', name: 'home')]
+    public function index(): Response
+    {
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olona Talents API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mt-5">
+                    <div class="card-header">
+                        <h1>Welcome to the Olona Talents API</h1>
+                    </div>
+                    <div class="card-body">
+                        <p>This is the API for Olona Talents. Below are some useful endpoints:</p>
+                        <ul>
+                            <li><code>/api/tesseract</code>: Endpoint for processing PDF files with Tesseract</li>
+                            <!-- Ajoutez d'autres endpoints ici -->
+                        </ul>
+                        <a href="https://www.olona-talents.com" class="btn btn-primary">Aller au site Olona Talents</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+HTML;
+
+        return new Response($html);
+    }
+    
     #[Route('/api/tesseract', name: 'tesseract', methods:['POST'])]
-    public function index(Request $request, LoggerInterface $logger): Response
+    public function tesseract(Request $request, LoggerInterface $logger): Response
     {
         $logger->info('Tesseract API called');
 
