@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class TesseractController extends AbstractController
 {
+    
     #[Route('/api/tesseract', name: 'tesseract', methods:['POST'])]
     public function index(Request $request, LoggerInterface $logger): Response
     {
@@ -27,7 +28,7 @@ class TesseractController extends AbstractController
 
         try {
             $file->move($uploadDir, $pdfPath);
-            $logger->info('File uploaded successfully', ['path' => $pdfPath]); // Log files in the upload directory
+            $logger->info('File uploaded successfully', ['path' => $pdfPath]);
             $uploadedFiles = scandir($uploadDir);
             $logger->info('Files in upload directory after upload', ['files' => $uploadedFiles]);
         } catch (FileException $e) {
@@ -39,20 +40,25 @@ class TesseractController extends AbstractController
         mkdir($outputDir);
         $logger->info('Created output directory', ['directory' => $outputDir]);
 
-        // Extract images from PDF
-        $cmd = "pdfimages -all $pdfPath $outputDir/image";
+        // Utilisez le chemin complet vers pdftoppm
+        $pdftoppmCmd = "/usr/bin/pdftoppm";
+
+        // Convert PDF to images
+        $cmd = "$pdftoppmCmd -png $pdfPath $outputDir/image";
         exec($cmd, $output, $retval);
-        $logger->info('Extract images command executed', ['command' => $cmd, 'output' => $output, 'retval' => $retval]);
+        $logger->info('Convert PDF to images command executed', ['command' => $cmd, 'output' => $output, 'retval' => $retval]);
+
+        // Log the files found
+        $images = glob("$outputDir/*.png");
+        $logger->info('Files found in output directory', ['files' => $images]);
 
         if ($retval !== 0) {
-            $logger->error('Error extracting images from PDF', ['output' => $output]);
-            return new Response('Failed to extract images from PDF', Response::HTTP_INTERNAL_SERVER_ERROR);
+            $logger->error('Error converting PDF to images', ['output' => $output]);
+            return new Response('Failed to convert PDF to images', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         // Process each image with Tesseract
-        $images = glob("$outputDir/*.png");
         $textOutput = [];
-
         foreach ($images as $image) {
             $output = null;
             $retval = null;
@@ -64,7 +70,12 @@ class TesseractController extends AbstractController
                 $logger->error('Error processing image with Tesseract', ['image' => $image, 'output' => $output]);
                 continue;
             }
-            $textOutput[] = implode("\n", $output);
+            if (!empty($output)) {
+                $logger->info('Tesseract output', ['output' => $output]);
+                $textOutput[] = implode("\n", $output);
+            } else {
+                $logger->info('Tesseract output is empty for image', ['image' => $image]);
+            }
         }
 
         // Clean up
@@ -74,6 +85,6 @@ class TesseractController extends AbstractController
 
         $logger->info('Tesseract processing completed');
 
-        return new Response(implode("\n", $textOutput));        
+        return new Response(implode("\n", $textOutput));
     }
 }
